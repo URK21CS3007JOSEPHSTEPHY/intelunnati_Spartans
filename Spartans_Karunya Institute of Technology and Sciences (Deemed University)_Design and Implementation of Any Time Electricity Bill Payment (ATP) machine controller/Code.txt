@@ -1,1 +1,63 @@
-
+-- Entity declaration
+entity ATP_Machine_Electricity_Bill_Payment is
+    port (
+        -- Inputs
+        clk             : in std_logic;
+        reset           : in std_logic;
+        card_inserted   : in std_logic;              -- Card insertion detection
+        card_data       : in std_logic_vector(7 downto 0);  -- Card data (e.g., customer ID)
+        pin             : in std_logic_vector(3 downto 0);   -- PIN for authorization
+        
+        -- Outputs
+        display         : out std_logic_vector(7 downto 0);  -- Display output
+        payment_success : out std_logic               -- Payment success flag
+    );
+end entity ATP_Machine_Electricity_Bill_Payment;
+-- Architecture definition
+architecture behavioral of ATP_Machine_Electricity_Bill_Payment is
+    -- Internal signal declarations
+    signal authorized        : std_logic := '0';
+    signal payment_completed : std_logic := '0';
+    signal counter           : integer range 0 to 9999 := 0;
+    -- Constants
+    constant BILL_AMOUNT : integer := 500;  -- Total bill amount in cents
+begin
+    -- Clock process
+    clk_process: process (clk, reset)
+    begin
+        if reset = '1' then
+            authorized <= '0';
+            payment_completed <= '0';
+            counter <= 0;
+        elsif rising_edge(clk) then
+            if card_inserted = '1' and authorized = '0' then
+                -- Process card data and perform authorization
+                -- In this example, the card data is compared with a hardcoded customer ID
+                if card_data = "11001010" then  -- Example customer ID
+                    authorized <= '1';
+                else
+                    authorized <= '0';
+                end if;
+            elsif authorized = '1' and payment_completed = '0' then
+                counter <= counter + 1;
+                if counter = 2000 then  -- Assuming 2 seconds delay for payment processing
+                    -- Perform payment processing
+                    if pin = "1010" then  -- PIN verification
+                        -- Perform payment transaction (e.g., deducting bill amount from customer account)
+                        -- In this example, payment is considered successful if the PIN is correct
+                        payment_completed <= '1';
+                    else
+                        authorized <= '0';  -- Incorrect PIN entered, deauthorize
+                    end if;
+                end if;
+            elsif payment_completed = '1' then
+                counter <= 0;
+                authorized <= '0';
+            end if;
+        end if;
+    end process clk_process;
+    -- Display output assignment
+    display <= std_logic_vector(unsigned(card_data) + (if payment_completed = '1' then BILL_AMOUNT else 0));
+    -- Payment success flag assignment
+    payment_success <= payment_completed;
+end architecture behavioral;
