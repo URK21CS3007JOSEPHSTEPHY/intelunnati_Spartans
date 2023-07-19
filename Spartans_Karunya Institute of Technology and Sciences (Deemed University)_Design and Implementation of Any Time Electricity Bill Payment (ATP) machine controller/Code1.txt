@@ -23,11 +23,9 @@ module ATP_Machine_Electricity_Bill_Payment (
     reg [7:0] payment_amount;
     reg [7:0] remaining_amount;
     reg [7:0] history_amount;
-
     // Constants
     localparam [7:0] BILL_AMOUNT = 8'hF4; // Total bill amount in cents
     localparam [12:0] TIMEOUT_COUNTER = 13'd39062; // Timeout duration in clock cycles
-
     // Clock process
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -134,7 +132,6 @@ module ATP_Machine_Electricity_Bill_Payment (
             endcase
         end
     end
-
     // Display output assignment
     always @* begin
         case (state)
@@ -147,7 +144,6 @@ module ATP_Machine_Electricity_Bill_Payment (
             default: display = 8'd0; // Display 0 in other states
         endcase
     end
-
     // Payment success and failure flag assignment
     always @* begin
         case (state)
@@ -165,5 +161,4 @@ module ATP_Machine_Electricity_Bill_Payment (
             end
         endcase
     end
-
 endmodule
